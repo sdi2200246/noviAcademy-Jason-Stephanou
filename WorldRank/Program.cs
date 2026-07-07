@@ -1,21 +1,5 @@
 ﻿using System.Linq;
-public class Player
-{
-    public Guid Id { get; }
-    public string Name { get; set; }
-    public int Score { get; private set; }
-    public Player(string? name)
-    {
-        if(string.IsNullOrWhiteSpace(name))
-            throw new ArgumentException("Name cannot be null of empty");
-
-        Id = Guid.NewGuid();
-        Name = name;
-        Score = 0;
-    }
-    public override string ToString()=> $"name:{Name}\nID:{Id}\nscore:{Score}\n";
-}
-
+using WorldRank;
 public class Menue
 {
     static void Main()
