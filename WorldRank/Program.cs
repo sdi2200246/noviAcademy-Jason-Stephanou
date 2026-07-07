@@ -1,91 +1,245 @@
-﻿using System.Linq;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using WorldRank;
+
 public class Menue
 {
+    private readonly Dictionary<Guid, IPlayer> _store = new();
+    private readonly IPlayerRepo _players;
+    private readonly IWalletRepo _wallets;
+
+    public Menue()
+    {
+        _players = new PlayerRepo(_store);
+        _wallets = new InMemWalletRepo(_store);
+    }
+
     static void Main()
     {
         var menue = new Menue();
-        List<Player> players = new List<Player>(); 
-        bool isRunning = true; 
+        bool isRunning = true;
 
         while (isRunning)
         {
             Console.WriteLine("\n--- Player Management System ---");
             Console.WriteLine("1. Add player");
             Console.WriteLine("2. List all players");
-            Console.WriteLine("3. Find by name");
-            Console.WriteLine("4. Exit");
-            
+            Console.WriteLine("3. Find player by name");
+            Console.WriteLine("4. Update a player's score");
+            Console.WriteLine("5. Delete a player");
+            Console.WriteLine("6. Group players by score (high -> low)");
+            Console.WriteLine("7. Add a wallet to a player");
+            Console.WriteLine("8. Show a player's wallets");
+            Console.WriteLine("9. Deposit / withdraw");
+            Console.WriteLine("0. Exit");
 
-            Console.Write("Choose an option (1-4): "); 
-            
+            Console.Write("Choose an option: ");
             string? choice = Console.ReadLine();
-            switch (choice)
+
+            try
             {
-                case "1":
-                    Console.WriteLine("\n[ Adding a new player... ]");
-                    menue.AddPlayer(players , menue.GetNameFromUser());
-                    break;
-                    
-                case "2":
-                    Console.WriteLine("\n[ Listing all players... ]");
-                    menue.ListPlayers(players);
-                    break;
-                    
-                case "3":
-                    Console.WriteLine("\n[ Finding player... ]");
-                    menue.FindAllByName(players , menue.GetNameFromUser());
-                    break;
-                    
-                case "4":
-                    Console.WriteLine("\nExiting the program. Goodbye!");
-                    isRunning = false; 
-                    break;
-                    
-                default:
-                    Console.WriteLine("\nInvalid input! Please type a number between 1 and 4 and try again.");
-                    break;
+                switch (choice)
+                {
+                    case "1": menue.AddPlayer(); break;
+                    case "2": menue.ListPlayers(); break;
+                    case "3": menue.FindByName(); break;
+                    case "4": menue.UpdateScore(); break;
+                    case "5": menue.DeletePlayer(); break;
+                    case "6": menue.GroupByScore(); break;
+                    case "7": menue.AddWallet(); break;
+                    case "8": menue.ShowWallets(); break;
+                    case "9": menue.Transact(); break;
+                    case "0":
+                        Console.WriteLine("\nExiting the program. Goodbye!");
+                        isRunning = false;
+                        break;
+                    default:
+                        Console.WriteLine("\nInvalid input! Please choose a listed option.");
+                        break;
+                }
+            }
+            catch (Exception e)
+            {
+                Console.WriteLine($"Error: {e.Message}");
             }
         }
     }
 
-    string? GetNameFromUser()
+    // ---------- helpers ----------
+
+    private string? GetNameFromUser()
     {
         Console.Write("Give Name: ");
         return Console.ReadLine();
     }
-
-    void AddPlayer(List<Player> players , string? name)
+    private Guid? PickPlayerId()
     {
-        try
+        var name = GetNameFromUser();
+        if (string.IsNullOrWhiteSpace(name))
         {
-            players.Add(new Player(name));
-            Console.WriteLine("Player added succesfully");
+            Console.WriteLine("Name cannot be empty.");
+            return null;
         }
-        catch (ArgumentException e)
+
+        var matches = _players.GroupPlayersByScore()
+                              .Where(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
+                              .ToList();
+
+        if (matches.Count == 0)
         {
-            Console.WriteLine(e.Message);
+            Console.WriteLine($"No player found by the name \"{name}\".");
+            return null;
         }
+        if (matches.Count == 1)
+            return matches[0].Id;
+
+        Console.WriteLine("Multiple players share that name:");
+        for (int i = 0; i < matches.Count; i++)
+            Console.WriteLine($"  {i + 1}. {matches[i]}");
+        Console.Write("Pick a number: ");
+        if (int.TryParse(Console.ReadLine(), out int idx) && idx >= 1 && idx <= matches.Count)
+            return matches[idx - 1].Id;
+
+        Console.WriteLine("Invalid selection.");
+        return null;
     }
-    void ListPlayers(List<Player> players)
-    {
 
-        if (players.Count() == 0)
+    private Currency? PickCurrency()
+    {
+        Console.WriteLine($"Currencies: {string.Join(", ", Enum.GetNames<Currency>())}");
+        Console.Write("Currency: ");
+        if (Enum.TryParse<Currency>(Console.ReadLine(), ignoreCase: true, out var currency))
+            return currency;
+
+        Console.WriteLine("Unknown currency.");
+        return null;
+    }
+
+    private void AddPlayer()
+    {
+        Console.WriteLine("\n[ Adding a new player... ]");
+        var player = new Player(GetNameFromUser());
+        _players.AddPlayer(player);
+        Console.WriteLine($"Player added successfully. Id: {player.Id}");
+    }
+
+    private void ListPlayers()
+    {
+        Console.WriteLine("\n[ Listing all players... ]");
+        _players.ListPlayers();
+    }
+
+    private void FindByName()
+    {
+        Console.WriteLine("\n[ Finding player... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        Console.WriteLine(_players.FindPlayer(id.Value));
+    }
+
+    private void UpdateScore()
+    {
+        Console.WriteLine("\n[ Updating score... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        Console.Write("New score: ");
+        if (!int.TryParse(Console.ReadLine(), out int score))
         {
-            Console.WriteLine("No players registered as of this time");
+            Console.WriteLine("That's not a number.");
             return;
         }
 
-        players.ForEach(p => Console.WriteLine(p.ToString()));
-
+        var player = _players.FindPlayer(id.Value);
+        player.UpdateScore(score);
+        Console.WriteLine($"Updated: {player}");
     }
-    void FindAllByName(List<Player> players , string? query)
+
+    private void DeletePlayer()
     {
-        var found  = players.Where(p => p.Name.Equals(query)).ToList();
-        ListPlayers(found);
-        if (found.Count() == 0)
+        Console.WriteLine("\n[ Deleting player... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        _players.DeletePlayer(id.Value);
+        Console.WriteLine("Player deleted.");
+    }
+
+    private void GroupByScore()
+    {
+        Console.WriteLine("\n[ Players by score (high -> low) ]");
+        var ordered = _players.GroupPlayersByScore();
+        if (ordered.Count == 0)
         {
-            Console.WriteLine($"No players found by the given name({query})");
+            Console.WriteLine("No players registered.");
+            return;
         }
+        ordered.ForEach(p => Console.WriteLine(p));
+    }
+
+    private void AddWallet()
+    {
+        Console.WriteLine("\n[ Adding a wallet... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        var currency = PickCurrency();
+        if (currency is null) return;
+
+        _wallets.AddWallet(new Wallet(currency.Value), id.Value);
+        Console.WriteLine($"{currency} wallet added.");
+    }
+
+    private void ShowWallets()
+    {
+        Console.WriteLine("\n[ Player's wallets... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        var wallets = _wallets.GetByPlayer(id.Value);
+        if (wallets.Count == 0)
+        {
+            Console.WriteLine("This player has no wallets.");
+            return;
+        }
+
+        foreach (var w in wallets)
+            Console.WriteLine($"{w.Currency}: {w.Balance}{(w.IsBlocked ? " [BLOCKED]" : "")}");
+    }
+
+    private void Transact()
+    {
+        Console.WriteLine("\n[ Deposit / withdraw... ]");
+        var id = PickPlayerId();
+        if (id is null) return;
+
+        var currency = PickCurrency();
+        if (currency is null) return;
+
+        var wallet = _wallets.GetByPlayer(id.Value)
+                             .FirstOrDefault(w => w.Currency == currency.Value);
+        if (wallet is null)
+        {
+            Console.WriteLine("That player has no wallet in that currency.");
+            return;
+        }
+
+        Console.Write("d = deposit, w = withdraw: ");
+        var op = Console.ReadLine()?.Trim().ToLower();
+
+        Console.Write("Amount: ");
+        if (!decimal.TryParse(Console.ReadLine(), out var amount))
+        {
+            Console.WriteLine("That's not a valid amount.");
+            return;
+        }
+
+        if (op == "d") wallet.Deposit(amount);
+        else if (op == "w") wallet.Withdraw(amount);
+        else { Console.WriteLine("Unknown operation."); return; }
+
+        Console.WriteLine($"OK. {wallet.Currency}: {wallet.Balance}");
     }
 }
