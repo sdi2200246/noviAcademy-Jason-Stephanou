@@ -1,4 +1,4 @@
-using WorldRank;
+namespace WorldRank;
 
 public interface IWalletRepo
 {
@@ -13,7 +13,7 @@ public class InMemWalletRepo : IWalletRepo
     {
         if (registry is null)
         {
-            throw new ArgumentNullException("Repository cannot be null");
+            throw new ArgumentNullException(nameof(registry) , "Repository cannot be null");
         }
         Registry = registry;
     }
@@ -32,6 +32,6 @@ public class InMemWalletRepo : IWalletRepo
         if (Registry.TryGetValue(playerId, out IPlayer? player))
             return player.Wallets.Values.ToList();
 
-        return new List<IWallet>();
+        throw new KeyNotFoundException($"Player not found: {playerId}");
     }
 }

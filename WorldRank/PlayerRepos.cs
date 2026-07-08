@@ -5,7 +5,9 @@ public interface IPlayerRepo
     public void AddPlayer(IPlayer player);
     public void DeletePlayer(Guid playerId);
     public IPlayer FindPlayer(Guid playerId);
-    public List<IPlayer> GroupPlayersByScore();
+
+    public List<IPlayer> GetAllPlayers();
+    public Dictionary<int, List<string>> GroupPlayerNamesByScore();
 
     public void ListPlayers();
 }
@@ -42,10 +44,15 @@ public class PlayerRepo : IPlayerRepo
             return player;
         throw new KeyNotFoundException("Player not found.");
     }
-    public List<IPlayer> GroupPlayersByScore()
-    {
-        return Players.Values.OrderByDescending(p => p.Score).ToList();
-    }
+   
+       public Dictionary<int, List<string>> GroupPlayerNamesByScore()
+            {
+                return Players.Values
+                    .GroupBy(p => p.Score)
+                    .ToDictionary(g => g.Key, g => g.Select(p => p.Name).ToList());
+            }
+    
+
     public void ListPlayers()
     {
         if (Players.Count == 0)
@@ -57,6 +64,8 @@ public class PlayerRepo : IPlayerRepo
         foreach (var player in Players.Values)
             Console.WriteLine(player.ToString());
     }
+
+    public List<IPlayer> GetAllPlayers() => Players.Values.ToList();
 }
 
 

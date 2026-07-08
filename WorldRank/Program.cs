@@ -3,13 +3,13 @@ using System.Collections.Generic;
 using System.Linq;
 using WorldRank;
 
-public class Menue
+public class Menu
 {
     private readonly Dictionary<Guid, IPlayer> _store = new();
     private readonly IPlayerRepo _players;
     private readonly IWalletRepo _wallets;
 
-    public Menue()
+    public Menu()
     {
         _players = new PlayerRepo(_store);
         _wallets = new InMemWalletRepo(_store);
@@ -17,7 +17,7 @@ public class Menue
 
     static void Main()
     {
-        var menue = new Menue();
+        var menu = new Menu();
         bool isRunning = true;
 
         while (isRunning)
@@ -41,15 +41,15 @@ public class Menue
             {
                 switch (choice)
                 {
-                    case "1": menue.AddPlayer(); break;
-                    case "2": menue.ListPlayers(); break;
-                    case "3": menue.FindByName(); break;
-                    case "4": menue.UpdateScore(); break;
-                    case "5": menue.DeletePlayer(); break;
-                    case "6": menue.GroupByScore(); break;
-                    case "7": menue.AddWallet(); break;
-                    case "8": menue.ShowWallets(); break;
-                    case "9": menue.Transact(); break;
+                    case "1": menu.AddPlayer(); break;
+                    case "2": menu.ListPlayers(); break;
+                    case "3": menu.FindByName(); break;
+                    case "4": menu.UpdateScore(); break;
+                    case "5": menu.DeletePlayer(); break;
+                    case "6": menu.GroupByScore(); break;
+                    case "7": menu.AddWallet(); break;
+                    case "8": menu.ShowWallets(); break;
+                    case "9": menu.Transact(); break;
                     case "0":
                         Console.WriteLine("\nExiting the program. Goodbye!");
                         isRunning = false;
@@ -82,7 +82,7 @@ public class Menue
             return null;
         }
 
-        var matches = _players.GroupPlayersByScore()
+        var matches = _players.GetAllPlayers()
                               .Where(p => p.Name.Equals(name, StringComparison.OrdinalIgnoreCase))
                               .ToList();
 
@@ -170,13 +170,14 @@ public class Menue
     private void GroupByScore()
     {
         Console.WriteLine("\n[ Players by score (high -> low) ]");
-        var ordered = _players.GroupPlayersByScore();
-        if (ordered.Count == 0)
+        var dictionary = _players.GroupPlayerNamesByScore();
+        if (dictionary.Count == 0)
         {
             Console.WriteLine("No players registered.");
             return;
         }
-        ordered.ForEach(p => Console.WriteLine(p));
+        foreach (var (score, names) in dictionary)
+            Console.WriteLine($"Score {score}: {string.Join(", ", names)}");
     }
 
     private void AddWallet()

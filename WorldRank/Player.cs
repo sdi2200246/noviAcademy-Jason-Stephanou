@@ -1,10 +1,8 @@
-﻿using System.Runtime.InteropServices.Swift;
-
-namespace WorldRank;
+﻿namespace WorldRank;
 
 public interface IPlayer
 {
-    public Dictionary<Currency, IWallet> Wallets { get; }
+    public IReadOnlyDictionary<Currency, IWallet> Wallets { get;}
     Guid Id { get; }
     string Name { get; }
     int Score { get; }
@@ -14,15 +12,16 @@ public interface IPlayer
 
 public class Player : IPlayer
 {
-    public Dictionary<Currency, IWallet> Wallets { get; private set; } = new Dictionary<Currency, IWallet>();
+    private readonly Dictionary<Currency, IWallet> _wallets = new();
+    public IReadOnlyDictionary<Currency, IWallet> Wallets => _wallets;
     public Guid Id { get; }
     public string Name { get; private set; }
     public int Score { get; private set; }
 
     public Player(string name)
     {
-        if (string.IsNullOrEmpty(name))
-            throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+        if (string.IsNullOrWhiteSpace(name))
+            throw new ArgumentException(nameof(name) , "Name cannot be null or empty.");
 
         Id = Guid.NewGuid();
         Name = name;
@@ -41,10 +40,10 @@ public class Player : IPlayer
     public void AddWallet(IWallet wallet)
     {
         if (wallet is null)
-            throw new ArgumentNullException("Wallet cannot be null");
+            throw new ArgumentNullException(nameof(wallet), "Wallet cannot be null");
 
-        if (!Wallets.TryAdd(wallet.Currency, wallet))
-            throw new ArgumentException($"Wallet with currency:{wallet.Currency} already exists for user:{Name}");
+        if (_wallets.TryAdd(wallet.Currency, wallet))
+            throw new InvalidOperationException($"Wallet with currency:{wallet.Currency} already exists for user:{Name}");
     }
 }
 
