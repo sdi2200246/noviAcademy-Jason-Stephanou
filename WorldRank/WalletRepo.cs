@@ -1,3 +1,5 @@
+using Microsoft.Extensions.Logging;
+
 namespace WorldRank;
 
 public interface IWalletRepo
@@ -8,14 +10,17 @@ public interface IWalletRepo
 
 public class InMemWalletRepo : IWalletRepo
 {
+
+    private readonly ILogger<InMemWalletRepo> _logger;
     Dictionary<Guid, IPlayer> Registry;
-    public InMemWalletRepo(Dictionary<Guid, IPlayer> registry)
+    public InMemWalletRepo(Dictionary<Guid, IPlayer> registry , ILogger<InMemWalletRepo> logger)
     {
         if (registry is null)
         {
             throw new ArgumentNullException(nameof(registry) , "Repository cannot be null");
         }
         Registry = registry;
+ 
     }
 
     public void AddWallet(IWallet wallet, Guid playerId)
@@ -32,6 +37,8 @@ public class InMemWalletRepo : IWalletRepo
         if (Registry.TryGetValue(playerId, out IPlayer? player))
             return player.Wallets.Values.ToList();
 
+
+        _logger.LogWarning("Player with ID {PlayerId} not found when trying to get wallets.", playerId);
         throw new KeyNotFoundException($"Player not found: {playerId}");
     }
 }

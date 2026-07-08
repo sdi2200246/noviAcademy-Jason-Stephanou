@@ -1,14 +1,17 @@
-﻿using System;
+﻿using Microsoft.Extensions.Logging;
+using NLog;
+using NLog.Extensions.Logging;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using WorldRank;
+
 
 public class Menu
 {
     private readonly Dictionary<Guid, IPlayer> _store = new();
     private readonly IPlayerRepo _players;
     private readonly IWalletRepo _wallets;
-
     public Menu()
     {
         _players = new PlayerRepo(_store);
@@ -17,6 +20,12 @@ public class Menu
 
     static void Main()
     {
+        var logger = LogManager.GetCurrentClassLogger();
+        logger.Info("App started");
+        logger.Warn("This is a warning");
+        logger.Error("Something broke");
+        LogManager.Shutdown(); // flushes file writes before exit
+
         var menu = new Menu();
         bool isRunning = true;
 

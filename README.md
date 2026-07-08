@@ -1,2 +1,2 @@
-# noviAcademy-Jason-Stephanou
+bash# noviAcademy-Jason-Stephanou
 Bootcamp Novibet
