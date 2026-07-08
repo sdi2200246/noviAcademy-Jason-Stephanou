@@ -42,7 +42,7 @@ public class Player : IPlayer
         if (wallet is null)
             throw new ArgumentNullException(nameof(wallet), "Wallet cannot be null");
 
-        if (_wallets.TryAdd(wallet.Currency, wallet))
+        if (!_wallets.TryAdd(wallet.Currency, wallet))
             throw new InvalidOperationException($"Wallet with currency:{wallet.Currency} already exists for user:{Name}");
     }
 }
