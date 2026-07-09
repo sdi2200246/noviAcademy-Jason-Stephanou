@@ -1,2 +1,1 @@
-bash# noviAcademy-Jason-Stephanou
-Bootcamp Novibet
+# novi-Academy-BabisTs
