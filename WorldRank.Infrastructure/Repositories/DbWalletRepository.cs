@@ -3,6 +3,7 @@ using WorldRank.Application.Interfaces;
 using WorldRank.Domain.Enums;
 using WorldRank.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
+using Microsoft.EntityFrameworkCore;
 
 namespace WorldRank.Infrastructure;
 
@@ -25,7 +26,7 @@ public class DbWalletRepository : IWalletRepository
 
     public List<Wallet> GetAllWalletsByPlayerId(int playerId)
     {
-        return _db.Wallets.Where(w => w.PlayerId == playerId).ToList();
+        return _db.Wallets.AsNoTracking().Where(w => w.PlayerId == playerId).ToList();
     }
 
     public Wallet GetWallet(int playerId, Currency currency)

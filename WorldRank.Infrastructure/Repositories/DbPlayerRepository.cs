@@ -1,5 +1,6 @@
 using WorldRank.Domain.Entities;
 using WorldRank.Application.Interfaces;
+using Microsoft.EntityFrameworkCore;
 
 namespace WorldRank.Infrastructure;
 
@@ -20,7 +21,7 @@ public class DbPlayerRepository : IPlayerRepository
 
     public IEnumerable<Player> GetAllPlayers()
     {
-        return _db.Players.ToList();
+        return _db.Players.AsNoTracking().ToList();
     }
 
     public void DeletePlayer(int playerId)
@@ -32,10 +33,9 @@ public class DbPlayerRepository : IPlayerRepository
             _db.SaveChanges();
         }
     }
-
     public Player? FindPlayer(int playerId)
     {
-        return _db.Players.Find(playerId);
+        return _db.Players.AsNoTracking().FirstOrDefault(p => p.Id == playerId);
     }
 
     public IEnumerable<IGrouping<int, Player>> GroupPlayersByScore()
