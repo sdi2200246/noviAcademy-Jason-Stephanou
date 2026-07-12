@@ -1,4 +1,3 @@
-using System.Data;
 using WorldRank.Domain.Enums;
 using WorldRank.Domain.Exceptions;
 

@@ -1,4 +1,3 @@
-using Microsoft.EntityFrameworkCore;
 using WorldRank.Domain.Entities;
 using WorldRank.Application.Interfaces;
 
