@@ -2,12 +2,17 @@ using Microsoft.Extensions.DependencyInjection;
 using NLog;
 using WorldRank.Application.Services;
 using WorldRank.Console;
+using Microsoft.Extensions.Configuration;
 
 var logger = LogManager.GetCurrentClassLogger();
 
-// Composition root: register every layer's services, then build the container.
+var configuration = new ConfigurationBuilder()
+			.SetBasePath(Directory.GetCurrentDirectory())
+			.AddJsonFile("appsettings.json", optional: false)
+			.Build();
+
 var services = new ServiceCollection();
-services.AddWorldRank();
+services.AddWorldRank(configuration);
 
 using var provider = services.BuildServiceProvider();
 
