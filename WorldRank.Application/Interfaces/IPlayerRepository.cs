@@ -4,13 +4,15 @@ namespace WorldRank.Application.Interfaces;
 
 public interface IPlayerRepository
 {
-	void AddPlayer(Player player);
+	Task AddPlayer(Player player , CancellationToken ct);
 
-	IEnumerable<Player> GetAllPlayers();
+	Task<List<Player>> GetAllPlayers(CancellationToken ct);
 
-	void DeletePlayer(int playerId);
+	Task DeletePlayer(int playerId , CancellationToken ct);
 
-	Player? FindPlayer(int playerId);
+	Task<Player?> FindPlayer(int playerId , CancellationToken ct);
 
-	IEnumerable<IGrouping<int, Player>> GroupPlayersByScore();
+	Task<List<Player>> GetByName(string name , CancellationToken ct);
+
+	Task<IEnumerable<IGrouping<int, Player>>> GroupPlayersByScore(CancellationToken ct);
 }

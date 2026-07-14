@@ -1,4 +1,5 @@
 using Microsoft.Extensions.DependencyInjection;
+using WorldRank.Application.Interfaces;
 using WorldRank.Application.Services;
 using WorldRank.Application.Strategies;
 
@@ -15,8 +16,8 @@ public static class DependencyInjection
 		services.AddSingleton<IFundsStrategy, ForceSubtractFundsStrategy>();
 
 		// Application services that drive the menu use-cases.
-		services.AddSingleton<PlayerService>();
-		services.AddSingleton<WalletService>();
+		services.AddScoped<IPlayerService , PlayerService>();
+		services.AddScoped<IWalletService , WalletService>();
 
 		return services;
 	}

@@ -5,7 +5,7 @@ using WorldRank.Domain.Exceptions;
 using Microsoft.Extensions.Logging;
 using Microsoft.EntityFrameworkCore;
 
-namespace WorldRank.Infrastructure;
+namespace WorldRank.Infrastructure.Repositories;
 
 public class DbWalletRepository : IWalletRepository
 {
