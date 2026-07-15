@@ -2,21 +2,27 @@ namespace WorldRank.Domain.Entities;
 
 public class Player : IPlayer
 {
-	public int Id { get; private set; }
+	public Guid Id { get;}
 	public string Name { get; private set; }
 	public int Score { get; private set; }
 
 	public List<Wallet>? Wallets {get; private set;}
 	 
-	public Player(int id, string name)
+	private Player(Guid id, string name , int score)
 	{
-		if (string.IsNullOrWhiteSpace(name))
-			throw new ArgumentException("Name cannot be empty.", nameof(name));
-
 		Id = id;
 		Name = name;
-		Score = 0;
+		Score = score;
 	}
+
+	public static Player CreateNew(string name)
+	{	
+		if (string.IsNullOrWhiteSpace(name))
+			throw new ArgumentException("Name cannot be null or empty.", nameof(name));
+
+		return new Player(Guid.NewGuid() , name , 0);
+	}
+
 
 	public void AddScore(int points)
 	{

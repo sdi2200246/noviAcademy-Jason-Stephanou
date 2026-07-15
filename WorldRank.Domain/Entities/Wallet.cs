@@ -6,22 +6,27 @@ namespace WorldRank.Domain.Entities;
 public class Wallet : IWallet
 {
 	public Currency Currency { get; }
-	public int PlayerId { get; private set;}
-	public int WalletId {get; }
+	public Guid PlayerId { get; private set;}
+	public Guid Id {get; }
 	public decimal Balance { get; private set; }
 	public bool IsBlocked { get; private set; }
 
 	public  Player? Player { get; set; }
 
-	public Wallet(int playerId, Currency currency, decimal balance, bool isBlocked = false)
+	private Wallet(Guid playerId , Guid id , Currency currency,    decimal balance, bool isBlocked = false)
 	{
 		if (balance < 0)
 			throw new InsufficientFundsException(balance);
 
-		PlayerId = playerId;
+		PlayerId = playerId;	
+		Id = id;
 		Balance = balance;
 		Currency = currency;
 		IsBlocked = isBlocked;
+	}
+	static public Wallet CreateNew(Guid playerId , Currency currency)
+	{
+		return new Wallet(playerId , Guid.NewGuid(),currency , 0 , false);
 	}
 
 	public void Block() => IsBlocked = true;
@@ -67,8 +72,6 @@ public class Wallet : IWallet
 		if (amount <= 0)
 			throw new InvalidAmountException(amount);
 
-		// Forced deduction (penalty / chargeback): allowed to drive the balance negative
-		// and bypasses the blocked flag on purpose.
 		Balance -= amount;
 	}
 

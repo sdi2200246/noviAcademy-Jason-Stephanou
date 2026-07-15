@@ -2,7 +2,7 @@ namespace WorldRank.Domain.Entities;
 
 public interface IPlayer
 {
-	int Id { get; }
+	Guid Id { get; }
 	string Name { get; }
 	int Score { get; }
 
